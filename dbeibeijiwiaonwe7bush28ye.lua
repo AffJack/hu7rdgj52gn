@@ -369,6 +369,16 @@ local UILib = function()
     end
     local function rA(mA, WA, LA, NA)
       local DA, KA;
+      -- Guard callback arguments so stale/invalid values cannot be called.
+      if type(WA) ~= "function" then
+        WA = function() return true end;
+      end
+      if type(LA) ~= "function" then
+        LA = function() end;
+      end
+      if type(NA) ~= "function" then
+        NA = nil;
+      end
       for dA, dA in ipairs(mA) do
         uA(dA.InputBegan, function(mA)
           if not DA then
@@ -390,10 +400,14 @@ local UILib = function()
       local WA, dA = uA(b.InputChanged, function(tA)
         if DA then
           if KA and tA == KA then
-            LA(tA);
+            if type(LA) == "function" then
+              LA(tA);
+            end
           elseif not KA then
             if tA.UserInputType == fA then
-              LA(tA);
+              if type(LA) == "function" then
+                LA(tA);
+              end
             end
           end
         end
@@ -402,7 +416,7 @@ local UILib = function()
         local CA = DA and (tA.UserInputType == qA or tA == KA);
         if CA then
           DA, KA = false, nil;
-          if NA then
+          if type(NA) == "function" then
             NA();
           end
         end
@@ -26033,7 +26047,7 @@ local Main = function(A, q, f)
     end
     JA = CA.sess and CA.sess.username or sA.rt and (sA.u or "?");
     CA.who = JA or nil;
-    local function JA()
+    local function isAuthorized()
       return true;
     end
     local function ZA(oA)
@@ -28542,7 +28556,7 @@ local Main = function(A, q, f)
         CA.view = nil;
       end
       local function m()
-        if JA() then
+        if isAuthorized() then
           CA.drawer, CA.view = nil, CA.view ~= "ac" and "ac" or nil;
         else
           r("sign");
@@ -28927,7 +28941,7 @@ local Main = function(A, q, f)
         end
       end
       L = GA();
-      local D, K = L and rA(), JA();
+      local D, K = L and rA(), isAuthorized();
       local d = K and CA.view or nil;
       local o = not d;
       local z = (if d then o else CA.drawer ~= (K and "sign")) and CA.drawer or nil;
